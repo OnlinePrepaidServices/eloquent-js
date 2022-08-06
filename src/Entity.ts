@@ -9,6 +9,7 @@ import {Converter} from "./Support/Converter";
 import {GetRouteBuilder} from "./Builder/GetRouteBuilder";
 import {FindRouteBuilder} from "./Builder/FindRouteBuilder";
 import {Cast} from "./Casts/Cast";
+import {RouteParameterRouteBuilder} from "./Builder/RouteParameterRouteBuilder";
 
 /**
  * @todo Generate setters and getter automatically Regex: (get\s+([a-z]+)\(\)[\s]*\{\s*return\s+this.get\(["'][a-zA-Z]+["']\)[;][\s]*})
@@ -20,19 +21,130 @@ export class Entity {
     protected static routesBag: Bag;
     protected static routesInitiated: boolean = false;
     protected castsBag: Bag = new Bag();
+    protected isDirty: boolean = false;
+    protected isInitialized: boolean = false;
+    protected fetchedFromServer: boolean;
+    protected primaryKey = 'uuid';
 
-    constructor(attributes: object = {}) {
+    constructor(attributes: object = {}, fetchedFromServer: boolean = false) {
         this.attributesBag = new AttributeBag();
         this.attributes(this.attributesBag);
         this.attributesBag.load(attributes);
         this.relations(this.relationsBag);
         this.buildRelations(attributes);
-
         this.casts(this.castsBag);
 
         (this.constructor as typeof Entity).initiateRoutes();
-
         this.originalBag = this.attributesBag.clone();
+        this.isInitialized = true;
+        this.fetchedFromServer = fetchedFromServer;
+    }
+
+    public static $get<T extends typeof Entity>(
+        this: T,
+        routeBuilderCallback: ((routeBuilder: GetRouteBuilder) => void) | null = null
+    ): Promise<Collection<InstanceType<T>>> {
+        this.initiateRoutes();
+
+        const getRouteBuilder = new GetRouteBuilder();
+        const url: string = this.buildRoute(getRouteBuilder, routeBuilderCallback, 'get');
+
+        return axios.get(url).then((response) => {
+            let entities = new Collection<InstanceType<T>>();
+
+            response.data.data.forEach((value: object) => {
+                entities.push(this.create(value, true) as InstanceType<T>);
+            })
+
+            return entities
+        });
+    }
+
+    public static $find<T extends typeof Entity>(
+        this: T,
+        uuid: string,
+        routeBuilderCallback: ((routeBuilder: FindRouteBuilder) => void) | null = null
+    ): Promise<InstanceType<T>> {
+        this.initiateRoutes();
+
+        const findRouteBuilder = new FindRouteBuilder();
+        findRouteBuilder.routeParameter('key', uuid);
+        const url: string = this.buildRoute(findRouteBuilder, routeBuilderCallback, 'find');
+
+        return axios.get(url).then((response) => {
+            return this.create(response.data.data, true);
+        });
+    }
+
+    public $create(routeBuilderCallback: ((routeBuilder: RouteParameterRouteBuilder) => void) | null = null): Promise<Entity | this> {
+        const createRouteBuilder = new RouteParameterRouteBuilder();
+        const url: string = (this.constructor as typeof Entity).buildRoute(createRouteBuilder, routeBuilderCallback, 'create');
+
+        return axios
+            .post(
+                url,
+                Converter.objectKeysToSnakeCase(this.attributesBag.all())
+            )
+            .then((response) => {
+                return (this.constructor as typeof Entity).create(response.data.data, true);
+            });
+    }
+
+    public $update(routeBuilderCallback: ((routeBuilder: RouteParameterRouteBuilder) => void) | null = null, key: string = this.primaryKey): Promise<Entity | this> {
+        const updateRouteBuilder = new RouteParameterRouteBuilder();
+        updateRouteBuilder.routeParameter('key', this.attributesBag.get(key));
+        const url: string = (this.constructor as typeof Entity).buildRoute(updateRouteBuilder, routeBuilderCallback, 'update');
+
+        return axios
+            .put(
+                url,
+                Converter.objectKeysToSnakeCase(this.attributesBag.all())
+            )
+            .then((response) => {
+                return (this.constructor as typeof Entity).create(response.data.data, true);
+            })
+    }
+
+    public $patch(routeBuilderCallback: ((routeBuilder: RouteParameterRouteBuilder) => void) | null = null, key: string = this.primaryKey): Promise<Entity | this> {
+        if (!this.isDirty) {
+            return new Promise((resolve) => {
+                resolve(this);
+            });
+        }
+
+        const patchRouteBuilder = new RouteParameterRouteBuilder();
+        patchRouteBuilder.routeParameter('key', this.attributesBag.get(key));
+        const url: string = (this.constructor as typeof Entity).buildRoute(patchRouteBuilder, routeBuilderCallback, 'update');
+
+        return axios
+            .put(
+                url,
+                Converter.objectKeysToSnakeCase(this.originalBag.diff(this.attributesBag))
+            )
+            .then((response) => {
+                return (this.constructor as typeof Entity).create(response.data.data, true);
+            })
+    }
+
+    public $delete(routeBuilderCallback: ((routeBuilder: RouteParameterRouteBuilder) => void) | null = null, key: string = this.primaryKey): Promise<Entity | this> {
+        const deleteRouteBuilder = new RouteParameterRouteBuilder();
+        deleteRouteBuilder.routeParameter('key', this.attributesBag.get(key));
+        const url: string = (this.constructor as typeof Entity).buildRoute(deleteRouteBuilder, routeBuilderCallback, 'update');
+
+        return axios
+            .put(url)
+            .then((response) => {
+                return (this.constructor as typeof Entity).create(response.data.data, true);
+            })
+    }
+
+    // @todo add correct typings
+    protected static buildRoute(routeBuilder: any, routeBuilderCallback: any, routeKey: string): string {
+        if (typeof routeBuilderCallback === "function") {
+            routeBuilderCallback(routeBuilder);
+        }
+
+        return Url.replaceUrlParameters(`${Configuration.get('url').base}${this.baseRoute()}${this.routesBag.get(routeKey).route}`, routeBuilder.getRouteParameters());
     }
 
     protected static initiateRoutes(): void {
@@ -61,7 +173,7 @@ export class Entity {
         throw `The "attributes()" method on ${this.constructor.name} should be extended`;
     }
 
-    protected relations(relations: Bag) {
+    protected relations(relations: RelationBag) {
     }
 
     protected casts(casts: Bag): void {
@@ -71,51 +183,8 @@ export class Entity {
         throw `The "baseRoute()" method on ${this.constructor.name} should be extended`;
     }
 
-    protected static create<T extends typeof Entity>(this: T, data: object): InstanceType<T> {
-        return new this({...data}) as InstanceType<T>;
-    }
-
-    public static $get<T extends typeof Entity>(
-        this: T,
-        routeBuilderCallback: ((routeBuilder: GetRouteBuilder) => void) | null = null
-    ): Promise<Collection<InstanceType<T>>> {
-        this.initiateRoutes();
-
-        const getRouteBuilder = new GetRouteBuilder();
-        if (routeBuilderCallback) {
-            routeBuilderCallback(getRouteBuilder);
-        }
-
-        let url: string = Url.replaceUrlParameters(`${Configuration.get('url').base}${this.baseRoute()}${this.routesBag.get('get').route}`, getRouteBuilder.getRouteParameters());
-        return axios.get(url).then((response) => {
-            let entities = new Collection<InstanceType<T>>();
-
-            response.data.data.forEach((value: object) => {
-                entities.push(this.create(value) as InstanceType<T>);
-            })
-
-            return entities
-        });
-    }
-
-    public static $find<T extends typeof Entity>(
-        this: T,
-        uuid: string,
-        routeBuilderCallback: ((routeBuilder: GetRouteBuilder) => void) | null = null
-    ): Promise<InstanceType<T>> {
-        this.initiateRoutes();
-
-        const findRouteBuilder = new FindRouteBuilder();
-        findRouteBuilder.routeParameter('key', uuid);
-        if (routeBuilderCallback) {
-            routeBuilderCallback(findRouteBuilder);
-        }
-
-        let url: string = Url.replaceUrlParameters(`${Configuration.get('url').base}${this.baseRoute()}${this.routesBag.get('find').route}`, findRouteBuilder.getRouteParameters());
-
-        return axios.get(url).then((response) => {
-            return this.create(response.data.data);
-        });
+    protected static create<T extends typeof Entity>(this: T, data: object, fetchedFromServer: boolean = false): InstanceType<T> {
+        return new this({...data}, fetchedFromServer) as InstanceType<T>;
     }
 
     public get(key: string, fallback: any = null): any {
@@ -136,6 +205,10 @@ export class Entity {
 
     public set(key: string, value: any): void {
         if (this.attributesBag.has(key)) {
+            if (!this.isDirty && this.isInitialized && !this.attributesBag.isEqualTo(key, value)) {
+                this.isDirty = true;
+            }
+
             if (this.castsBag.has(key)) {
                 this.attributesBag.set(key, this.castsBag.get<Cast>(key).get(key));
 

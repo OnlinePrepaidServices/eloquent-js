@@ -70,6 +70,22 @@ export class Bag {
 
         return this;
     }
+
+    public isEqualTo(key: string, value: any): boolean {
+        return this.get(key) === value;
+    }
+
+    public diff(bag: Bag): { [key: string]: any } {
+        const attributes: { [key: string]: any } = {...bag.all()};
+
+        Object.keys(attributes).forEach((key) => {
+            if (this.get(key) === attributes[key]) {
+                delete attributes[key];
+            }
+        });
+
+        return attributes;
+    }
 }
 
 export function getBag(object: { [key: string]: any }, key: string): Bag | any {

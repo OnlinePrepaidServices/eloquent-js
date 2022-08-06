@@ -4,9 +4,6 @@ import {RelationBag} from "../../Bag/RelationBag";
 import {Bag} from "../../Bag/Bag";
 import {DateTimeCast} from "../../Casts/DateTimeCast";
 
-/**
- * @class Entity
- */
 export class User extends Entity {
     protected static baseRoute(): string {
         return 'users';

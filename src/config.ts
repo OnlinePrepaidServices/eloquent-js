@@ -6,6 +6,18 @@ export let config: object = {
         find: {
             route: '/{key}',
         },
+        create: {
+            route: ''
+        },
+        update: {
+            route: '/{key}'
+        },
+        patch: {
+            route: '/{key}'
+        },
+        delete: {
+            route: '/{key}'
+        }
     },
     url: {
         regex: /{(\w+)}/gm,

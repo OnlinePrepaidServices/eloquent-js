@@ -1,11 +1,10 @@
 import {User} from "../__tests_data__/Support/UserEntity";
 import {Configuration} from "../Configuration";
-import {config} from "../__tests_data__/config"
 import axios from "axios";
 import {Collection} from "collect.js";
 import {GetRouteBuilder} from "../Builder/GetRouteBuilder";
 import {MultipleRouteParametersEntity} from "../__tests_data__/Support/MultipleRouteParametersEntity";
-
+import {config} from "../config";
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -32,6 +31,15 @@ const staticUsers: Collection<any> = new Collection([
 
 describe('Entity', () => {
     describe('An entity can interact with the server.', () => {
+        // @todo check why the order of test matter in this one.
+        it('does not perform an axios call when partially updating the entity asserting the entity is clean', () => {
+            const user = new User({...staticUsers.first()});
+            user.$patch().then((newUser) => {
+                expect(user).toEqual(newUser);
+            });
+            expect(axios.put).not.toHaveBeenCalled();
+        });
+
         it('can extend two classes', () => {
             let subParameterBuilder = GetRouteBuilder;
             let queryBuilder = new subParameterBuilder();
@@ -46,7 +54,7 @@ describe('Entity', () => {
 
             const userObject = new User(user);
             expect(userObject.createdBy).toBeInstanceOf(User);
-        })
+        });
 
         it('can handle multiple relations', () => {
             const user = {...staticUsers.get(0)};
@@ -57,14 +65,28 @@ describe('Entity', () => {
             userObject.createdBy.forEach((value: User) => {
                 expect(value).toBeInstanceOf(User);
             });
-        })
+        });
+
+        it('becomes dirty when modified', () => {
+            const user = new User({...staticUsers.first()});
+            // @ts-ignore
+            expect(user.isDirty).toBeFalsy();
+
+            user.firstName = staticUsers.first().first_name;
+            // @ts-ignore
+            expect(user.isDirty).toBeFalsy();
+
+            user.firstName = 'Ben';
+            // @ts-ignore
+            expect(user.isDirty).toBeTruthy();
+        });
 
         it('can handle multiple route parameters', () => {
             mockedAxios.get.mockResolvedValueOnce({
                 data: {
                     data: [
-                        staticUsers.get(0),
-                        staticUsers.get(1)
+                        {...staticUsers.get(0)},
+                        {...staticUsers.get(1)}
                     ]
                 }
             });
@@ -81,8 +103,8 @@ describe('Entity', () => {
             mockedAxios.get.mockResolvedValueOnce({
                 data: {
                     data: [
-                        staticUsers.get(0),
-                        staticUsers.get(1)
+                        {...staticUsers.get(0)},
+                        {...staticUsers.get(1)}
                     ]
                 }
             });
@@ -101,16 +123,55 @@ describe('Entity', () => {
             const user1: any = staticUsers.first()
             mockedAxios.get.mockResolvedValueOnce({
                 data: {
-                    data: user1
+                    data: {...user1}
                 }
             });
             const user: Promise<User> = User.$find(user1.uuid);
             expect(axios.get).toHaveBeenCalledWith(`/api/users/${user1.uuid}`);
             expect(user).resolves.toBeInstanceOf(User);
             user.then((user) => {
-                console.log(user.createdAt);
                 expect(user.toObject(true)).toEqual(user1);
             })
+        });
+
+        it('can create an entity on the server', () => {
+            const user = new User({...staticUsers.first()});
+            mockedAxios.post.mockResolvedValueOnce({
+                data: {
+                    data: {...staticUsers.first()}
+                }
+            });
+            user.$create();
+            expect(axios.post).toHaveBeenCalledWith(`/api/users`, {...staticUsers.first()});
+        });
+
+        it('can update an entity on the server', () => {
+            const user = new User({...staticUsers.first()});
+            mockedAxios.put.mockResolvedValueOnce({
+                data: {
+                    data: {...staticUsers.first()}
+                }
+            });
+            user.$update();
+            expect(axios.put).toHaveBeenCalledWith(`/api/users/${user.uuid}`, {...staticUsers.first()});
+        });
+
+        it('can partially update an entity on the server', () => {
+            const user = new User({...staticUsers.first()});
+            const newName = staticUsers.get(1).first_name;
+            mockedAxios.put.mockResolvedValueOnce({
+                data: {
+                    data: {...staticUsers.first()}
+                }
+            });
+
+            user.firstName = newName;
+            user.$patch();
+            expect(axios.put).toHaveBeenCalledWith(`/api/users/${user.uuid}`, {first_name: newName});
+        });
+
+        it('can delete an entity', () => {
+
         });
     });
 })
