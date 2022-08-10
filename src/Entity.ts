@@ -54,7 +54,7 @@ export class Entity {
 
             response.data.data.forEach((value: object) => {
                 entities.push(this.create(value, true) as InstanceType<T>);
-            })
+            });
 
             return entities
         });
@@ -132,7 +132,7 @@ export class Entity {
         const url: string = (this.constructor as typeof Entity).buildRoute(deleteRouteBuilder, routeBuilderCallback, 'update');
 
         return axios
-            .put(url)
+            .delete(url)
             .then((response) => {
                 return (this.constructor as typeof Entity).create(response.data.data, true);
             })
@@ -144,7 +144,14 @@ export class Entity {
             routeBuilderCallback(routeBuilder);
         }
 
-        return Url.replaceUrlParameters(`${Configuration.get('url').base}${this.baseRoute()}${this.routesBag.get(routeKey).route}`, routeBuilder.getRouteParameters());
+        let url = Url.replaceUrlParameters(`${Configuration.get('url').base}${this.baseRoute()}${this.routesBag.get(routeKey).route}`, routeBuilder.getRouteParameters());
+        let searchParameters = routeBuilder.handle();
+
+        if (!searchParameters) {
+            return url;
+        }
+
+        return `${url}?${searchParameters}`
     }
 
     protected static initiateRoutes(): void {
@@ -155,6 +162,14 @@ export class Entity {
         this.routesBag = new Bag(Configuration.get('routes'))
         this.routes(this.routesBag);
         this.routesInitiated = true;
+    }
+
+    protected static baseRoute(): string {
+        throw `The "baseRoute()" method on ${this.constructor.name} should be extended`;
+    }
+
+    protected static create<T extends typeof Entity>(this: T, data: object, fetchedFromServer: boolean = false): InstanceType<T> {
+        return new this({...data}, fetchedFromServer) as InstanceType<T>;
     }
 
     protected buildRelations(attributes: { [key: string]: any }) {
@@ -177,14 +192,6 @@ export class Entity {
     }
 
     protected casts(casts: Bag): void {
-    }
-
-    protected static baseRoute(): string {
-        throw `The "baseRoute()" method on ${this.constructor.name} should be extended`;
-    }
-
-    protected static create<T extends typeof Entity>(this: T, data: object, fetchedFromServer: boolean = false): InstanceType<T> {
-        return new this({...data}, fetchedFromServer) as InstanceType<T>;
     }
 
     public get(key: string, fallback: any = null): any {
@@ -231,6 +238,5 @@ export class Entity {
 
     public toObject(skipUndefined: boolean = false): { [key: string]: any } {
         return Converter.objectKeysToSnakeCase(this.attributesBag.all());
-
     }
 }

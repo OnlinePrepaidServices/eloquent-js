@@ -1,12 +1,9 @@
 import {Bag} from "../Bag/Bag";
 import {RouteBuilderBag} from "./RouteBuilderBag";
 
-// export interface RouteBuilder {
-//     [key: string]: any;
-// }
-
 export class RouteBuilder {
     protected data: Bag = new Bag();
+    // @todo move to separate class
     protected routeParameters: {[key:string]: any} = {};
 
     public handle(): string {

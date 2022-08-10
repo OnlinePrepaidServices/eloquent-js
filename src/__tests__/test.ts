@@ -170,8 +170,30 @@ describe('Entity', () => {
             expect(axios.put).toHaveBeenCalledWith(`/api/users/${user.uuid}`, {first_name: newName});
         });
 
-        it('can delete an entity', () => {
+        it('can paginate entities', () => {
+            mockedAxios.get.mockResolvedValueOnce({
+                data: {
+                    data: []
+                }
+            });
 
+            User.$get((routeBuilder) => {
+                routeBuilder.paginate();
+            });
+            expect(axios.get).toHaveBeenCalledWith(`/api/users?page=1&per_page=15`);
+        });
+
+        it('can delete an entity', () => {
+            mockedAxios.delete.mockResolvedValueOnce({
+                data: {
+                    data: {...staticUsers.first()}
+                }
+            });
+
+            const user = new User();
+            user.uuid = staticUsers.first().uuid;
+            user.$delete();
+            expect(axios.get).toHaveBeenCalledWith(`/api/users/${staticUsers.first().uuid}`);
         });
     });
 })
