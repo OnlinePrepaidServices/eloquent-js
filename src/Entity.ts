@@ -4,13 +4,13 @@ import {Bag} from "./Bag/Bag";
 import {RelationBag} from "./Bag/RelationBag";
 import {Configuration} from "./Configuration";
 import {Url} from "./Support/Url";
-import {Collection} from 'collect.js';
 import {Converter} from "./Support/Converter";
 import {GetRouteBuilder} from "./Builder/GetRouteBuilder";
 import {FindRouteBuilder} from "./Builder/FindRouteBuilder";
-import {Cast} from "./Casts/Cast";
 import {RouteParameterRouteBuilder} from "./Builder/RouteParameterRouteBuilder";
 import {PaginationCollection} from "./Collection/PaginationCollection";
+import {GeneralObject} from "./GeneralTypes";
+import {CastsBag} from "./Bag/CastsBag";
 import {EntityCollection} from "./Collection/EntitiyCollection";
 
 /**
@@ -22,7 +22,7 @@ export class Entity {
     protected relationsBag: RelationBag = new RelationBag();
     protected static routesBag: Bag;
     protected static routesInitiated: boolean = false;
-    protected castsBag: Bag = new Bag();
+    protected castsBag: CastsBag = new CastsBag();
     protected isDirty: boolean = false;
     protected isInitialized: boolean = false;
     protected fetchedFromServer: boolean;
@@ -42,27 +42,16 @@ export class Entity {
         this.fetchedFromServer = fetchedFromServer;
     }
 
-    public static $get<T extends typeof Entity>(
-        this: T,
+    public static $get<T>(
         routeBuilderCallback: ((routeBuilder: GetRouteBuilder) => void) | null = null
-    ): Promise<PaginationCollection<InstanceType<T>>> {
+    ): Promise<T> {
         this.initiateRoutes();
 
         const getRouteBuilder = new GetRouteBuilder();
         const url: string = this.buildRoute(getRouteBuilder, routeBuilderCallback, 'get');
 
         return axios.get(url).then((response) => {
-            const collection = new PaginationCollection<InstanceType<T>>();
-
-            if (response.data.meta) {
-                collection.meta.loadMetaData(response.data.meta);
-            }
-
-            response.data.data.forEach((value: object) => {
-                collection.push(this.create(value, true) as InstanceType<T>);
-            });
-
-            return collection
+            return PaginationCollection.fromResponse<T>(response, this);
         });
     }
 
@@ -150,8 +139,8 @@ export class Entity {
             routeBuilderCallback(routeBuilder);
         }
 
-        let url = Url.replaceUrlParameters(`${Configuration.get('url').base}${this.baseRoute()}${this.routesBag.get(routeKey).route}`, routeBuilder.getRouteParameters());
-        let searchParameters = routeBuilder.handle();
+        const url = Url.replaceUrlParameters(`${Configuration.get('url').base}${this.baseRoute()}${this.routesBag.get(routeKey).route}`, routeBuilder.getRouteParameters());
+        const searchParameters = routeBuilder.handle();
 
         if (!searchParameters) {
             return url;
@@ -171,14 +160,14 @@ export class Entity {
     }
 
     protected static baseRoute(): string {
-        throw `The "baseRoute()" method on ${this.constructor.name} should be extended`;
+        throw new Error(`The "baseRoute()" method on ${this.constructor.name} should be extended`);
     }
 
     protected static create<T extends typeof Entity>(this: T, data: object, fetchedFromServer: boolean = false): InstanceType<T> {
         return new this({...data}, fetchedFromServer) as InstanceType<T>;
     }
 
-    protected buildRelations(attributes: { [key: string]: any }) {
+    protected buildRelations(attributes: GeneralObject) {
         const lowerCamelCaseAttributes = Converter.objectKeysToLowerCamelCase(attributes);
         this.relationsBag.eachType((key, value) => {
             if (lowerCamelCaseAttributes[key]) {
@@ -188,22 +177,25 @@ export class Entity {
     }
 
     protected static routes(routes: Bag): void {
+        return;
     }
 
     protected attributes(attributes: AttributeBag): void {
-        throw `The "attributes()" method on ${this.constructor.name} should be extended`;
+        throw new Error(`The "attributes()" method on ${this.constructor.name} should be extended`);
     }
 
-    protected relations(relations: RelationBag) {
+    protected relations(relations: RelationBag): void {
+        return;
     }
 
     protected casts(casts: Bag): void {
+        return;
     }
 
     public get(key: string, fallback: any = null): any {
         if (this.attributesBag.has(key)) {
             if (this.castsBag.has(key)) {
-                return this.castsBag.get<Cast>(key).get(this.attributesBag.get(key));
+                return this.castsBag.performGetCast(key, this.attributesBag.get(key), this);
             }
 
             return this.attributesBag.get(key);
@@ -223,7 +215,7 @@ export class Entity {
             }
 
             if (this.castsBag.has(key)) {
-                this.attributesBag.set(key, this.castsBag.get<Cast>(key).get(key));
+                this.attributesBag.set(key, this.castsBag.performSetCast(key, value, this));
 
                 return;
             }
@@ -239,10 +231,10 @@ export class Entity {
             return;
         }
 
-        throw `The class ${this.constructor.name} does not have a property "${key}"`;
+        throw new Error(`The class ${this.constructor.name} does not have a property "${key}"`);
     }
 
-    public toObject(skipUndefined: boolean = false): { [key: string]: any } {
+    public toObject(skipUndefined: boolean = false): GeneralObject {
         return Converter.objectKeysToSnakeCase(this.attributesBag.all());
     }
 }

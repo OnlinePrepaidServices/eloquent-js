@@ -1,3 +1,5 @@
+import {GeneralObject} from "../GeneralTypes";
+
 export class Bag {
     protected items: any | object = {};
 
@@ -5,13 +7,25 @@ export class Bag {
         this.items = items;
     }
 
-    public load(data: object): this {
+    public load(data: GeneralObject): this {
         this.items = data;
 
         return this;
     }
 
-    public get<T>(key: string | number, fallback: any = undefined): T | any {
+    public loadStrict(data: GeneralObject): this {
+        Object.keys(data).forEach((key) => {
+            if (!this.has(key)) {
+                return;
+            }
+
+            this.set(key, data[key]);
+        })
+
+        return this;
+    }
+
+    public get<T>(key: string | number, fallback?: any): T | any {
         if (this.items.hasOwnProperty(key)) {
             return this.items[key];
         }
@@ -61,7 +75,7 @@ export class Bag {
         return !this.isEmpty();
     }
 
-    public create(key: string, initialValue: any = undefined) {
+    public create(key: string, initialValue?: any) {
         if (this.has(key)) {
             return this;
         }

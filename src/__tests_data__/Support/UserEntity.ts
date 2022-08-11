@@ -25,7 +25,7 @@ export class User extends Entity {
     }
 
     protected casts(casts: Bag) {
-        casts.set('createdAt', DateTimeCast);
+        casts.create('createdAt', DateTimeCast);
     }
 
     get uuid() {

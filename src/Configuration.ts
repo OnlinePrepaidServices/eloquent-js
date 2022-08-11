@@ -1,7 +1,7 @@
 import {Bag} from "./Bag/Bag";
 
 export const Configuration = {
-    configuration: <Bag>new Bag(),
+    configuration: new Bag() as Bag,
 
     load(configuration: object) {
         this.configuration.load(configuration);

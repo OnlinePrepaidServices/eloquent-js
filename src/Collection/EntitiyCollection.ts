@@ -1,21 +1,26 @@
 import {Collection} from "collect.js";
+import {MetaBag} from "./MetaBag";
+import {AxiosResponse} from "axios";
 import {Entity} from "../Entity";
+import {GeneralObject} from "../GeneralTypes";
 
-export class EntityCollection {
-    public entities: Collection<any> = new Collection<any>();
-    // constructor(response: AxiosResponse) {
-    //     this.meta = new MetaResponse(response.data.meta);
-    // }
-    //
-    // push(entity: T) {
-    //     this.entities.push(entity);
-    //
-    //     return this;
-    // }
+export class EntityCollection<T extends Entity> {
+    public entities: Collection<T> = new Collection<T>();
+    public meta: MetaBag = new MetaBag();
 
-    push(item: Entity): this {
-        this.entities.push(item);
+    static fromResponse<T>(axiosResponse: AxiosResponse, entity: typeof Entity): T {
+        const entityCollection = new this();
 
-        return this;
+        entityCollection.createFromResponse(axiosResponse, entity, entityCollection)
+
+        return entityCollection as unknown as T;
+    }
+
+    protected createFromResponse(axiosResponse: AxiosResponse, entity: typeof Entity, entityCollection: EntityCollection<T>): EntityCollection<T> {
+        axiosResponse.data.data.forEach((data: GeneralObject) => {
+            entityCollection.entities.push(new entity(data, true) as unknown as T);
+        })
+
+        return entityCollection as EntityCollection<T>;
     }
 }

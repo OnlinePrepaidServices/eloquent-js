@@ -6,6 +6,7 @@ import {GetRouteBuilder} from "../Builder/GetRouteBuilder";
 import {MultipleRouteParametersEntity} from "../__tests_data__/Support/MultipleRouteParametersEntity";
 import {config} from "../config";
 import {PaginationCollection} from "../Collection/PaginationCollection";
+import * as moment from "moment";
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -41,9 +42,14 @@ describe('Entity', () => {
             expect(axios.put).not.toHaveBeenCalled();
         });
 
+        it('performs a cast when configured', () => {
+            const user = new User({...staticUsers.get(0)});
+            expect(user.createdAt).toBeInstanceOf(moment);
+        })
+
         it('can extend two classes', () => {
-            let subParameterBuilder = GetRouteBuilder;
-            let queryBuilder = new subParameterBuilder();
+            const subParameterBuilder = GetRouteBuilder;
+            const queryBuilder = new subParameterBuilder();
             queryBuilder.include('unit').include('unit2');
             queryBuilder.filter('unit', 'unit1').filter('bunit', 'bunit1');
             queryBuilder.routeParameter('lala', 'asdf');
@@ -92,7 +98,7 @@ describe('Entity', () => {
                 }
             });
 
-            const users = MultipleRouteParametersEntity.$get(function (routeBuilder) {
+            const users = MultipleRouteParametersEntity.$get( (routeBuilder) => {
                 expect(routeBuilder).toBeInstanceOf(GetRouteBuilder);
                 routeBuilder.routeParameter('unit', 'abc');
             });
@@ -111,16 +117,16 @@ describe('Entity', () => {
                         from: 1,
                     }
                 },
-
             });
 
-            const users: Promise<PaginationCollection<User>> = User.$get();
+            const users = User.$get<PaginationCollection<User>>();
             expect(axios.get).toHaveBeenCalledWith(`/api/users`);
             expect(users).resolves.toBeInstanceOf(PaginationCollection);
             users.then((userCollection) => {
                 userCollection.entities.each((user, key) => {
-                    expect(user.toObject(true)).toEqual(staticUsers.get(parseInt(key as string)));
+                    expect(user.toObject(true)).toEqual(staticUsers.get(parseInt(key as string, 10)));
                 })
+                expect(userCollection.meta.from).toBe(1);
             });
         });
 
