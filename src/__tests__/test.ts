@@ -5,6 +5,7 @@ import {Collection} from "collect.js";
 import {GetRouteBuilder} from "../Builder/GetRouteBuilder";
 import {MultipleRouteParametersEntity} from "../__tests_data__/Support/MultipleRouteParametersEntity";
 import {config} from "../config";
+import {PaginationCollection} from "../Collection/PaginationCollection";
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -105,15 +106,19 @@ describe('Entity', () => {
                     data: [
                         {...staticUsers.get(0)},
                         {...staticUsers.get(1)}
-                    ]
-                }
+                    ],
+                    meta: {
+                        from: 1,
+                    }
+                },
+
             });
 
-            const users: Promise<Collection<User>> = User.$get();
+            const users: Promise<PaginationCollection<User>> = User.$get();
             expect(axios.get).toHaveBeenCalledWith(`/api/users`);
-            expect(users).resolves.toBeInstanceOf(Collection);
+            expect(users).resolves.toBeInstanceOf(PaginationCollection);
             users.then((userCollection) => {
-                userCollection.each((user, key) => {
+                userCollection.entities.each((user, key) => {
                     expect(user.toObject(true)).toEqual(staticUsers.get(parseInt(key as string)));
                 })
             });

@@ -22,4 +22,3 @@ export class RouteBuilder {
         return new URLSearchParams(searchResults).toString();
     }
 }
-

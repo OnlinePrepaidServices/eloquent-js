@@ -10,6 +10,8 @@ import {GetRouteBuilder} from "./Builder/GetRouteBuilder";
 import {FindRouteBuilder} from "./Builder/FindRouteBuilder";
 import {Cast} from "./Casts/Cast";
 import {RouteParameterRouteBuilder} from "./Builder/RouteParameterRouteBuilder";
+import {PaginationCollection} from "./Collection/PaginationCollection";
+import {EntityCollection} from "./Collection/EntitiyCollection";
 
 /**
  * @todo Generate setters and getter automatically Regex: (get\s+([a-z]+)\(\)[\s]*\{\s*return\s+this.get\(["'][a-zA-Z]+["']\)[;][\s]*})
@@ -43,20 +45,24 @@ export class Entity {
     public static $get<T extends typeof Entity>(
         this: T,
         routeBuilderCallback: ((routeBuilder: GetRouteBuilder) => void) | null = null
-    ): Promise<Collection<InstanceType<T>>> {
+    ): Promise<PaginationCollection<InstanceType<T>>> {
         this.initiateRoutes();
 
         const getRouteBuilder = new GetRouteBuilder();
         const url: string = this.buildRoute(getRouteBuilder, routeBuilderCallback, 'get');
 
         return axios.get(url).then((response) => {
-            let entities = new Collection<InstanceType<T>>();
+            const collection = new PaginationCollection<InstanceType<T>>();
+
+            if (response.data.meta) {
+                collection.meta.loadMetaData(response.data.meta);
+            }
 
             response.data.data.forEach((value: object) => {
-                entities.push(this.create(value, true) as InstanceType<T>);
+                collection.push(this.create(value, true) as InstanceType<T>);
             });
 
-            return entities
+            return collection
         });
     }
 
