@@ -21,12 +21,12 @@ export class CastsBag extends Bag {
     public performGetCast(key: string, value: any, entity: Entity): any {
         const parameters = this.get<CastBagParameters>(key);
 
-        return parameters.type.get(value, entity, parameters.parameters);
+        return parameters.type.get(value, {...parameters.parameters, entity: entity});
     }
 
     public performSetCast(key: string, value: any, entity: Entity): any {
         const parameters = this.get<CastBagParameters>(key);
 
-        return parameters.type.set(value, entity, parameters.parameters);
+        return parameters.type.set(value, {...parameters.parameters, entity: entity});
     }
 }

@@ -3,6 +3,7 @@ import {AttributeBag} from "../../Bag/AttributeBag";
 import {RelationBag} from "../../Bag/RelationBag";
 import {Bag} from "../../Bag/Bag";
 import {DateTimeCast} from "../../Casts/DateTimeCast";
+import {CastsBag} from "../../Bag/CastsBag";
 
 export class User extends Entity {
     protected static baseRoute(): string {
@@ -24,7 +25,7 @@ export class User extends Entity {
             .create('unit', User);
     }
 
-    protected casts(casts: Bag) {
+    protected casts(casts: CastsBag) {
         casts.create('createdAt', DateTimeCast);
     }
 

@@ -2,7 +2,7 @@ import {Cast} from "./Cast";
 import * as moment from "moment/moment";
 
 export class DateTimeCast extends Cast {
-    static get(value: any): any {
+    public static get(value: any, parameters: any): any {
         if (!value) {
             return null;
         }
@@ -10,7 +10,7 @@ export class DateTimeCast extends Cast {
         return moment(value);
     }
 
-    static set(value: any): any {
+    static set(value: any, parameters: any): any {
         let date;
         if (!value) {
             return null;
