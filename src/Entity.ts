@@ -188,7 +188,7 @@ export class Entity {
         return;
     }
 
-    protected casts(casts: Bag): void {
+    protected casts(casts: CastsBag): void {
         return;
     }
 
