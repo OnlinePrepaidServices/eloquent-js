@@ -14,3 +14,7 @@ export * from "./config";
 // Casts
 export * from "./Casts/Cast"
 export * from "./Casts/DateTimeCast";
+
+// Collections
+export * from "./Collection/EntitiyCollection";
+export * from "./Collection/PaginationCollection";
