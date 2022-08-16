@@ -11,7 +11,9 @@ import {RouteParameterRouteBuilder} from "./Builder/RouteParameterRouteBuilder";
 import {PaginationCollection} from "./Collection/PaginationCollection";
 import {GeneralObject} from "./GeneralTypes";
 import {CastsBag} from "./Bag/CastsBag";
-import {EntityCollection} from "./Collection/EntitiyCollection";
+import {EE} from "./Support/Event/EE";
+import {EntityEvent} from "./Eventing/Events/EntityEvent";
+import {EventKey} from "./Enum/EventKey";
 
 /**
  * @todo Generate setters and getter automatically Regex: (get\s+([a-z]+)\(\)[\s]*\{\s*return\s+this.get\(["'][a-zA-Z]+["']\)[;][\s]*})
@@ -67,7 +69,11 @@ export class Entity {
         const url: string = this.buildRoute(findRouteBuilder, routeBuilderCallback, 'find');
 
         return axios.get(url).then((response) => {
-            return this.create(response.data.data, true);
+            const entity = this.create(response.data.data, true);
+
+            EE.emit(new EntityEvent(EventKey.from(EventKey.RETRIEVED).prefixKey(this.constructor.name), entity));
+
+            return entity;
         });
     }
 
@@ -75,13 +81,19 @@ export class Entity {
         const createRouteBuilder = new RouteParameterRouteBuilder();
         const url: string = (this.constructor as typeof Entity).buildRoute(createRouteBuilder, routeBuilderCallback, 'create');
 
+        EE.emit(new EntityEvent(EventKey.from(EventKey.CREATING).prefixKey(this.constructor.name), this));
+
         return axios
             .post(
                 url,
                 Converter.objectKeysToSnakeCase(this.attributesBag.all())
             )
             .then((response) => {
-                return (this.constructor as typeof Entity).create(response.data.data, true);
+                const entity = (this.constructor as typeof Entity).create(response.data.data, true);
+
+                EE.emit(new EntityEvent(EventKey.from(EventKey.CREATED).prefixKey(this.constructor.name), entity));
+
+                return entity;
             });
     }
 
@@ -90,13 +102,19 @@ export class Entity {
         updateRouteBuilder.routeParameter('key', this.attributesBag.get(key));
         const url: string = (this.constructor as typeof Entity).buildRoute(updateRouteBuilder, routeBuilderCallback, 'update');
 
+        EE.emit(new EntityEvent(EventKey.from(EventKey.UPDATING).prefixKey(this.constructor.name), this));
+
         return axios
             .put(
                 url,
                 Converter.objectKeysToSnakeCase(this.attributesBag.all())
             )
             .then((response) => {
-                return (this.constructor as typeof Entity).create(response.data.data, true);
+                const entity = (this.constructor as typeof Entity).create(response.data.data, true);
+
+                EE.emit(new EntityEvent(EventKey.from(EventKey.UPDATED).prefixKey(this.constructor.name), entity));
+
+                return entity;
             })
     }
 
@@ -111,13 +129,19 @@ export class Entity {
         patchRouteBuilder.routeParameter('key', this.attributesBag.get(key));
         const url: string = (this.constructor as typeof Entity).buildRoute(patchRouteBuilder, routeBuilderCallback, 'update');
 
+        EE.emit(new EntityEvent(EventKey.from(EventKey.UPDATING).prefixKey(this.constructor.name), this));
+
         return axios
             .put(
                 url,
                 Converter.objectKeysToSnakeCase(this.originalBag.diff(this.attributesBag))
             )
             .then((response) => {
-                return (this.constructor as typeof Entity).create(response.data.data, true);
+                const entity = (this.constructor as typeof Entity).create(response.data.data, true);
+
+                EE.emit(new EntityEvent(EventKey.from(EventKey.UPDATED).prefixKey(this.constructor.name), entity));
+
+                return entity;
             })
     }
 
@@ -126,10 +150,16 @@ export class Entity {
         deleteRouteBuilder.routeParameter('key', this.attributesBag.get(key));
         const url: string = (this.constructor as typeof Entity).buildRoute(deleteRouteBuilder, routeBuilderCallback, 'update');
 
+        EE.emit(new EntityEvent(EventKey.from(EventKey.DELETING).prefixKey(this.constructor.name), this));
+
         return axios
             .delete(url)
             .then((response) => {
-                return (this.constructor as typeof Entity).create(response.data.data, true);
+                const entity = (this.constructor as typeof Entity).create(response.data.data, true);
+
+                EE.emit(new EntityEvent(EventKey.from(EventKey.DELETED).prefixKey(this.constructor.name), entity));
+
+                return entity;
             })
     }
 
