@@ -6,9 +6,12 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "dependencies": {
+    "@typescript-eslint/typescript-estree": "^5.33.1",
     "axios": "^0.27.2",
     "collect.js": "^4.34.3",
-    "moment": "^2.29.4"
+    "eslint": "^8.22.0",
+    "moment": "^2.29.4",
+    "ts-node": "^10.9.1"
   },
   "scripts": {
     "test": "jest --config jestconfig.json",

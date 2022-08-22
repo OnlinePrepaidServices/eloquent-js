@@ -12,9 +12,12 @@ export class RelationBag extends Bag {
     }
 
     // @todo add type hint for extends Entity
-    public create<T>(key: string, relation: any) {
+    public create<T>(key: string, relation: any, many: boolean = false) {
         this.items[key] = undefined;
-        this.types[key] = relation;
+        this.types[key] = {
+            relation,
+            many
+        };
 
         return this;
     }
@@ -38,12 +41,12 @@ export class RelationBag extends Bag {
             const entities: Entity[] = [];
 
             attributes.forEach((value) => {
-                entities.push(new this.types[relation](value));
+                entities.push(new this.types[relation].relation(value));
             });
 
             this.set(relation, entities);
         } else {
-            this.set(relation, new this.types[relation](attributes));
+            this.set(relation, new this.types[relation].relation(attributes));
         }
     }
 }

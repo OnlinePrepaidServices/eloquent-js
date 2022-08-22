@@ -65,11 +65,11 @@ describe('Entity', () => {
 
         it('can handle multiple relations', () => {
             const user = {...staticUsers.get(0)};
-            user.created_by = [{...staticUsers.get(0)}, {...staticUsers.get(1)}];
+            user.created_by_multiple = [{...staticUsers.get(0)}, {...staticUsers.get(1)}];
 
             const userObject = new User(user);
-            expect(userObject.createdBy).toBeInstanceOf(Array);
-            userObject.createdBy.forEach((value: User) => {
+            expect(userObject.createdByMultiple).toBeInstanceOf(Array);
+            userObject.createdByMultiple.forEach((value: User) => {
                 expect(value).toBeInstanceOf(User);
             });
         });

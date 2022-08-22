@@ -14,11 +14,10 @@ import {CastsBag} from "./Bag/CastsBag";
 import {EE} from "./Support/Event/EE";
 import {EntityEvent} from "./Eventing/Events/EntityEvent";
 import {EventKey} from "./Enum/EventKey";
+import {Collection} from "collect.js";
+import {EntityInterface} from "./EntityInterface";
 
-/**
- * @todo Generate setters and getter automatically Regex: (get\s+([a-z]+)\(\)[\s]*\{\s*return\s+this.get\(["'][a-zA-Z]+["']\)[;][\s]*})
- */
-export class Entity {
+export class Entity implements EntityInterface {
     protected attributesBag: AttributeBag;
     protected originalBag: AttributeBag;
     protected relationsBag: RelationBag = new RelationBag();
@@ -262,6 +261,30 @@ export class Entity {
         }
 
         throw new Error(`The class ${this.constructor.name} does not have a property "${key}"`);
+    }
+
+    public getAttributesData(): Collection<any> {
+        const attributesData = new Collection();
+
+        this.attributesBag.each((key, item) => {
+            attributesData.push({
+                key,
+                type: this.attributesBag.type(key)?.type,
+                setType: []
+                    .concat(this.attributesBag.type(key)?.type as any, this.attributesBag.type(key)?.setType as any)
+                    .filter((data) => !!data),
+            })
+        })
+
+        this.relationsBag.eachType((key, item) => {
+            attributesData.push({
+                key,
+                type: [item.many ? `${item.relation.name}[]` : item.relation.name],
+                setType: [item.many ? `${item.relation.name}[]` : item.relation.name],
+            })
+        })
+
+        return attributesData;
     }
 
     public toObject(skipUndefined: boolean = false): GeneralObject {
