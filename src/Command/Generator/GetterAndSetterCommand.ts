@@ -55,11 +55,11 @@ export class GetterAndSetterCommand {
             const template =
                 `
     get ${key}()${type} {
-         return this.get('${key}');
+        return this.get('${key}');
     }
 
     set ${key}(value${setType}) {
-         this.set('${key}', value);
+        this.set('${key}', value);
     }`
 
             file.addLinesAtEndOfClass(template);
