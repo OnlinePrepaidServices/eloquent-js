@@ -1,5 +1,5 @@
 import {Cast} from "./Cast";
-import * as moment from "moment/moment";
+import moment from "moment";
 
 export class DateTimeCast extends Cast {
     public static get(value: any, parameters: any): any {

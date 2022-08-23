@@ -1,6 +1,6 @@
 import {User} from "./src/__tests_data__/Support/UserEntity";
-import {GetterAndSetterCommand} from "./src/Command/Generator/GetterAndSetterCommand";
-import {GetterAndSetterBag} from "./src/Command/Generator/GetterAndSetterBag";
+import {GetterAndSetterCommand} from "./src";
+import {GetterAndSetterBag} from "./src";
 
 const getterAndSetterBag = new GetterAndSetterBag();
 getterAndSetterBag.push(User, __dirname + '/src/__tests_data__/Support/UserEntity.ts');

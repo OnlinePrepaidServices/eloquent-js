@@ -6,7 +6,7 @@ import {GetRouteBuilder} from "../Builder/GetRouteBuilder";
 import {MultipleRouteParametersEntity} from "../__tests_data__/Support/MultipleRouteParametersEntity";
 import {config} from "../config";
 import {PaginationCollection} from "../Collection/PaginationCollection";
-import * as moment from "moment";
+import moment from "moment";
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;

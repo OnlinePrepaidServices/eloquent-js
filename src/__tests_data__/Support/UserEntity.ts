@@ -3,8 +3,7 @@ import {AttributeBag} from "../../Bag/AttributeBag";
 import {RelationBag} from "../../Bag/RelationBag";
 import {DateTimeCast} from "../../Casts/DateTimeCast";
 import {CastsBag} from "../../Bag/CastsBag";
-import {Moment} from "moment/moment";
-import {EntityInterface} from "../../EntityInterface";
+import {Moment} from "moment";
 
 export class User extends Entity {
     protected static baseRoute(): string {
@@ -32,66 +31,66 @@ export class User extends Entity {
     }
 
     get uuid(): string {
-         return this.get('uuid');
+        return this.get('uuid');
     }
 
     set uuid(value: string) {
-         this.set('uuid', value);
+        this.set('uuid', value);
     }
 
     get firstName(): string {
-         return this.get('firstName');
+        return this.get('firstName');
     }
 
     set firstName(value: string) {
-         this.set('firstName', value);
+        this.set('firstName', value);
     }
 
     get lastName(): string {
-         return this.get('lastName');
+        return this.get('lastName');
     }
 
     set lastName(value: string) {
-         this.set('lastName', value);
+        this.set('lastName', value);
     }
 
     get email(): string {
-         return this.get('email');
+        return this.get('email');
     }
 
     set email(value: string) {
-         this.set('email', value);
+        this.set('email', value);
     }
 
     get createdAt(): Moment {
-         return this.get('createdAt');
+        return this.get('createdAt');
     }
 
     set createdAt(value: Moment | string) {
-         this.set('createdAt', value);
+        this.set('createdAt', value);
     }
 
     get createdBy(): User {
-         return this.get('createdBy');
+        return this.get('createdBy');
     }
 
     set createdBy(value: User) {
-         this.set('createdBy', value);
+        this.set('createdBy', value);
     }
 
     get createdByMultiple(): User[] {
-         return this.get('createdByMultiple');
+        return this.get('createdByMultiple');
     }
 
     set createdByMultiple(value: User[]) {
-         this.set('createdByMultiple', value);
+        this.set('createdByMultiple', value);
     }
 
     get unit(): User {
-         return this.get('unit');
+        return this.get('unit');
     }
 
     set unit(value: User) {
-         this.set('unit', value);
+        this.set('unit', value);
     }
 }
