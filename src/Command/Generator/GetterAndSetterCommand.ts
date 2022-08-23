@@ -49,8 +49,8 @@ export class GetterAndSetterCommand {
     protected addAttributeGettersAndSetters(file: SourceFile, keys: string[], attributesCollection: Collection<any>) {
         keys.forEach((key: string) => {
             const attributeData = attributesCollection.where('key', key).first();
-            const type: string = attributeData.type ? `: ${(attributeData.type as unknown as string[]).join(' | ')}` : '';
-            const setType: string = attributeData.setType ? `: ${(attributeData.setType as unknown as string[]).join(' | ')}` : '';
+            const type: string = attributeData.type?.length ? `: ${(attributeData.type as unknown as string[]).join(' | ')}` : '';
+            const setType: string = attributeData.setType?.length ? `: ${(attributeData.setType as unknown as string[]).join(' | ')}` : '';
 
             const template =
                 `
@@ -70,7 +70,7 @@ export class GetterAndSetterCommand {
         const program = parse(source, options);
 
         simpleTraverse(program, {
-            enter(node) {
+            enter(node: any) {
                 // if(node.loc.start.line = 75) {
                 //     console.log(node);
                 // }
