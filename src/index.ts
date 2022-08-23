@@ -28,3 +28,8 @@ export * from "./Support/Event/AbstractEvent";
 export * from "./Support/Event/AbstractListener";
 export * from "./Support/Event/EventEmitter";
 export * from "./Support/Event/EE";
+
+
+// Getter and setter command
+export * from "./Command/Generator/GetterAndSetterBag";
+export * from "./Command/Generator/GetterAndSetterCommand";
