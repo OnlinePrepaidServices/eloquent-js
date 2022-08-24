@@ -197,10 +197,10 @@ export class Entity implements EntityInterface {
     }
 
     protected buildRelations(attributes: GeneralObject) {
-        const lowerCamelCaseAttributes = Converter.objectKeysToLowerCamelCase(attributes);
+        const camelCaseAttributes = Converter.objectKeysToCamelCase(attributes);
         this.relationsBag.eachType((key, value) => {
-            if (lowerCamelCaseAttributes[key]) {
-                this.relationsBag.createRelation(key, lowerCamelCaseAttributes[key]);
+            if (camelCaseAttributes[key]) {
+                this.relationsBag.createRelation(key, camelCaseAttributes[key]);
             }
         })
     }

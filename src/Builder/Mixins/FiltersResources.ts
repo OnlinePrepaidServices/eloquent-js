@@ -17,7 +17,7 @@ RouteBuilderBag.set(name, (filters: { key: string, value: string }[]): { key: st
     return filterResult;
 });
 
-export function FilterResources<TBase extends Constructor>(Base: TBase) {
+export function FiltersResources<TBase extends Constructor>(Base: TBase) {
     return class extends Base {
           filter(key: string, value: string): this {
             // @todo fix this hack

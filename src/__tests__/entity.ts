@@ -98,7 +98,7 @@ describe('Entity', () => {
                 }
             });
 
-            const users = MultipleRouteParametersEntity.$get( (routeBuilder) => {
+            const users = MultipleRouteParametersEntity.$get((routeBuilder) => {
                 expect(routeBuilder).toBeInstanceOf(GetRouteBuilder);
                 routeBuilder.routeParameter('unit', 'abc');
             });
@@ -206,5 +206,15 @@ describe('Entity', () => {
             user.$delete();
             expect(axios.get).toHaveBeenCalledWith(`/api/users/${staticUsers.first().uuid}`);
         });
+    });
+
+    it('can sort entities', () => {
+        const t = () => {
+            User.$get((callback) =>{
+                expect(callback.sort('unit').handle()).toEqual('sort=unit');
+            });
+        };
+        expect(t).toThrow(TypeError);
+
     });
 })

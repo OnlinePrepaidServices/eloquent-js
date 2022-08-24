@@ -1,7 +1,16 @@
 import {RouteParameters} from "./Mixins/RouteParameters";
-import {FilterResources} from "./Mixins/FilterResources";
+import {FiltersResources} from "./Mixins/FiltersResources";
 import {IncludesResources} from "./Mixins/IncludesResources";
 import {RouteBuilder} from "./RouteBuilder";
 import {PaginatesResources} from "./Mixins/PaginatesResources";
+import {SortsResources} from "./Mixins/SortsResources";
 
-export class GetRouteBuilder extends PaginatesResources(RouteParameters(FilterResources(IncludesResources(RouteBuilder)))){}
+export class GetRouteBuilder extends SortsResources(
+    PaginatesResources(
+        RouteParameters(
+            FiltersResources(
+                IncludesResources(RouteBuilder)
+            )
+        )
+    )
+){}

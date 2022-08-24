@@ -1,5 +1,6 @@
 import {Bag} from "../Bag/Bag";
 import {GeneralObject} from "../GeneralTypes";
+import {Converter} from "../Support/Converter";
 
 export class MetaBag {
     [key: string]: any
@@ -13,7 +14,7 @@ export class MetaBag {
     public total = undefined;
 
     public load(data: GeneralObject): void {
-        Object.keys(data).forEach((key) => {
+        Object.keys(Converter.objectKeysToCamelCase(data)).forEach((key) => {
             if(!this.hasOwnProperty(key)){
                 return;
             }

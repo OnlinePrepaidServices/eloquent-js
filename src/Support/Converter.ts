@@ -3,7 +3,7 @@ export class Converter {
         return value.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
     }
 
-    static toLowerCamelCase(value: string): string {
+    static toCamelCase(value: string): string {
         return value.replace(/([-_]\w)/g, g => g[1].toUpperCase());
     }
 
@@ -17,11 +17,11 @@ export class Converter {
         return result;
     }
 
-    static objectKeysToLowerCamelCase(object: { [key: string]: any }) : { [key: string]: any } {
+    static objectKeysToCamelCase(object: { [key: string]: any }) : { [key: string]: any } {
         let result: { [key: string]: any } = {};
 
         for (const [key, value] of Object.entries(object)) {
-            result[this.toLowerCamelCase(key)] = value;
+            result[this.toCamelCase(key)] = value;
         }
 
         return result;

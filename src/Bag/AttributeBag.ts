@@ -8,7 +8,7 @@ export class AttributeBag extends Bag {
     protected types: GeneralObjectType<Types> = {};
 
     public load(data: { [key: string]: any }): this {
-        const convertedData = Converter.objectKeysToLowerCamelCase(data);
+        const convertedData = Converter.objectKeysToCamelCase(data);
         Object.keys(convertedData).forEach((key: string) => {
             if (this.has(key)) {
                 this.set(key, convertedData[key]);

@@ -1,6 +1,12 @@
 import {RouteParameters} from "./Mixins/RouteParameters";
-import {FilterResources} from "./Mixins/FilterResources";
+import {FiltersResources} from "./Mixins/FiltersResources";
 import {IncludesResources} from "./Mixins/IncludesResources";
 import {RouteBuilder} from "./RouteBuilder";
 
-export class FindRouteBuilder extends RouteParameters(FilterResources(IncludesResources(RouteBuilder))){}
+export class FindRouteBuilder extends RouteParameters(
+    FiltersResources(
+        IncludesResources(
+            RouteBuilder
+        )
+    )
+){}
