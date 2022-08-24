@@ -209,12 +209,10 @@ describe('Entity', () => {
     });
 
     it('can sort entities', () => {
-        const t = () => {
-            User.$get((callback) =>{
+        expect(() => {
+            User.$get((callback) => {
                 expect(callback.sort('unit').handle()).toEqual('sort=unit');
             });
-        };
-        expect(t).toThrow(TypeError);
-
+        }).toThrow(TypeError);
     });
 })
