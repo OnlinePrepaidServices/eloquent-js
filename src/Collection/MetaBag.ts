@@ -14,7 +14,8 @@ export class MetaBag {
     public total = undefined;
 
     public load(data: GeneralObject): void {
-        Object.keys(Converter.objectKeysToCamelCase(data)).forEach((key) => {
+        data = Converter.objectKeysToCamelCase(data);
+        Object.keys(data).forEach((key) => {
             this[key] = data[key];
         })
     }
