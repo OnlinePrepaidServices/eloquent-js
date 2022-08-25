@@ -6,6 +6,6 @@ export abstract class AbstractListener {
     public abstract handle(event: AbstractEvent): void;
 
     public isWildcardKey(): boolean {
-        return !!this.key.endsWith('.*');
+        return this.key.endsWith('.*');
     }
 }

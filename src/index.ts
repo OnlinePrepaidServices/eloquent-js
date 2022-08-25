@@ -31,5 +31,5 @@ export * from "./Support/Event/EE";
 
 
 // Getter and setter command
-export * from "./Command/Generator/GetterAndSetterBag";
-export * from "./Command/Generator/GetterAndSetterCommand";
+// export * from "./Command/Generator/GetterAndSetterBag";
+// export * from "./Command/Generator/GetterAndSetterCommand";

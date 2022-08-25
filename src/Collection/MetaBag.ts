@@ -15,10 +15,6 @@ export class MetaBag {
 
     public load(data: GeneralObject): void {
         Object.keys(Converter.objectKeysToCamelCase(data)).forEach((key) => {
-            if(!this.hasOwnProperty(key)){
-                return;
-            }
-
             this[key] = data[key];
         })
     }
