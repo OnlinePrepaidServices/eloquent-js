@@ -23,8 +23,8 @@ export function PaginatesResources<TBase extends Constructor>(Base: TBase) {
         paginate(page: number = 1, perPage: number = 15) {
             getBag(this, 'data')
                 .set('pagination', [{
-                    page: page,
-                    perPage: perPage
+                    page,
+                    perPage
                 }]);
 
             return this;

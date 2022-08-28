@@ -16,7 +16,7 @@ export class Listeners {
         let listeners: Array<AbstractListener> = [];
 
         Object.keys(this.items).forEach((objectKey: string) => {
-            if(this.items[objectKey].match(key)){
+            if (this.items[objectKey].match(key)) {
                 listeners = listeners.concat(this.items[objectKey].all());
             }
         });

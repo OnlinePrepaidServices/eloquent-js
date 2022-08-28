@@ -8,7 +8,6 @@ import {Converter} from "./Support/Converter";
 import {GetRouteBuilder} from "./Builder/GetRouteBuilder";
 import {FindRouteBuilder} from "./Builder/FindRouteBuilder";
 import {RouteParameterRouteBuilder} from "./Builder/RouteParameterRouteBuilder";
-import {PaginationCollection} from "./Collection/PaginationCollection";
 import {GeneralObject} from "./GeneralTypes";
 import {CastsBag} from "./Bag/CastsBag";
 import {EE} from "./Support/Event/EE";
@@ -16,6 +15,9 @@ import {EntityEvent} from "./Eventing/Events/EntityEvent";
 import {EventKey} from "./Enum/EventKey";
 import {Collection} from "collect.js";
 import {EntityInterface} from "./EntityInterface";
+import {EntityCollectionResponse} from "./Response/EntitiyCollectionResponse";
+import {SingleEntityResponse} from "./Response/SingleEntityResponse";
+import {FindWrappedRouteBuilder} from "./Builder/FindWrappedRouteBuilder";
 
 export class Entity implements EntityInterface {
     protected attributesBag: AttributeBag;
@@ -43,7 +45,7 @@ export class Entity implements EntityInterface {
         this.fetchedFromServer = fetchedFromServer;
     }
 
-    public static $get<T>(
+    public static $get<T extends EntityCollectionResponse<any>>(
         routeBuilderCallback: ((routeBuilder: GetRouteBuilder) => void) | null = null
     ): Promise<T> {
         this.initiateRoutes();
@@ -52,8 +54,25 @@ export class Entity implements EntityInterface {
         const url: string = this.buildRoute(getRouteBuilder, routeBuilderCallback, 'get');
 
         return axios.get(url).then((response) => {
-            return PaginationCollection.fromResponse<T>(response, this);
+            if (typeof getRouteBuilder.outputClass === 'undefined') {
+                return EntityCollectionResponse.fromResponse(response, this) as T;
+            }
+
+            return getRouteBuilder.outputClass.fromResponse(response, this) as T;
         });
+    }
+
+    protected static find(
+        uuid: string,
+        routeBuilderCallback: ((routeBuilder: FindRouteBuilder | FindWrappedRouteBuilder) => void) | null = null
+    ): Promise<any> {
+        this.initiateRoutes();
+
+        const findRouteBuilder = new FindRouteBuilder();
+        findRouteBuilder.routeParameter('key', uuid);
+        const url: string = this.buildRoute(findRouteBuilder, routeBuilderCallback, 'find');
+
+        return axios.get(url)
     }
 
     public static $find<T extends typeof Entity>(
@@ -61,18 +80,26 @@ export class Entity implements EntityInterface {
         uuid: string,
         routeBuilderCallback: ((routeBuilder: FindRouteBuilder) => void) | null = null
     ): Promise<InstanceType<T>> {
-        this.initiateRoutes();
+        return this.find(uuid, routeBuilderCallback).then((response) => {
+            const entity = SingleEntityResponse.fromResponse<SingleEntityResponse<InstanceType<T>>>(response, this);
 
-        const findRouteBuilder = new FindRouteBuilder();
-        findRouteBuilder.routeParameter('key', uuid);
-        const url: string = this.buildRoute(findRouteBuilder, routeBuilderCallback, 'find');
+            EE.emit(new EntityEvent(EventKey.from(EventKey.RETRIEVED).prefixKey(this.constructor.name), entity.entity));
 
-        return axios.get(url).then((response) => {
-            const entity = this.create(response.data.data, true);
+            return entity.entity;
+        });
+    }
 
-            EE.emit(new EntityEvent(EventKey.from(EventKey.RETRIEVED).prefixKey(this.constructor.name), entity));
+    public static $findWrapped<T extends Entity, B extends SingleEntityResponse<T>>(
+        uuid: string,
+        routeBuilderCallback: ((routeBuilder: FindWrappedRouteBuilder) => void)
+    ): Promise<B> {
+        // @ts-ignore
+        return this.find(uuid, routeBuilderCallback).then((response) => {
+            const findWrappedRouteBuilder = new FindWrappedRouteBuilder();
 
-            return entity;
+            routeBuilderCallback(findWrappedRouteBuilder);
+
+            return findWrappedRouteBuilder.outputClass?.fromResponse(response, this) as Promise<SingleEntityResponse<T>>;
         });
     }
 

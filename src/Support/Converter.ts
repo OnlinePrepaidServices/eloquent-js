@@ -17,7 +17,7 @@ export class Converter {
         return result;
     }
 
-    static objectKeysToCamelCase(object: { [key: string]: any }) : { [key: string]: any } {
+    static objectKeysToCamelCase(object: { [key: string]: any }): { [key: string]: any } {
         let result: { [key: string]: any } = {};
 
         for (const [key, value] of Object.entries(object)) {

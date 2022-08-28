@@ -42,7 +42,7 @@ export class GetterAndSetterCommand {
         this.addAttributeGettersAndSetters(file, keys, attributesCollection);
 
         fs.writeFile(filePath, file.toString(), () => {
-            //
+            console.log(`Saved file ${entity.name}`);
         });
     }
 
@@ -71,9 +71,6 @@ export class GetterAndSetterCommand {
 
         simpleTraverse(program, {
             enter(node: any) {
-                // if(node.loc.start.line = 75) {
-                //     console.log(node);
-                // }
                 if (node.type === 'MethodDefinition' && keys.includes((node.key as GeneralObject).name)) {
                     range(node.loc.start.line, node.loc.end.line).forEach((line: number) => {
                         file.removeLine(line);

@@ -1,12 +1,16 @@
-import {User} from "../__tests_data__/Support/UserEntity";
-import {Configuration} from "../Configuration";
 import axios from "axios";
+import moment from "moment";
 import {Collection} from "collect.js";
+import {Configuration} from "../Configuration";
+import {EntityCollectionResponse} from "../Response/EntitiyCollectionResponse";
+import {Entity} from "../Entity";
 import {GetRouteBuilder} from "../Builder/GetRouteBuilder";
 import {MultipleRouteParametersEntity} from "../__tests_data__/Support/MultipleRouteParametersEntity";
+import {PaginationCollectionResponse} from "../Response/PaginationCollectionResponse";
+import {User} from "../__tests_data__/Support/UserEntity";
 import {config} from "../config";
-import {PaginationCollection} from "../Collection/PaginationCollection";
-import moment from "moment";
+import {SingleTest} from "../Response/SingleTest";
+import {SingleEntityResponse} from "../Response/SingleEntityResponse";
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -114,19 +118,22 @@ describe('Entity', () => {
                         {...staticUsers.get(1)}
                     ],
                     meta: {
-                        from: 1,
+                        per_page: 1,
                     }
                 },
             });
 
-            const users = User.$get<PaginationCollection<User>>();
+            const users = User.$get<EntityCollectionResponse<User>>((routeBuilder) => {
+                routeBuilder.outputClass = PaginationCollectionResponse;
+            });
             expect(axios.get).toHaveBeenCalledWith(`/api/users`);
-            expect(users).resolves.toBeInstanceOf(PaginationCollection);
+            expect(users).resolves.toBeInstanceOf(PaginationCollectionResponse);
+
             users.then((userCollection) => {
                 userCollection.entities.each((user, key) => {
                     expect(user.toObject(true)).toEqual(staticUsers.get(parseInt(key as string, 10)));
                 })
-                expect(userCollection.meta.from).toBe(1);
+                expect(userCollection.meta.perPage).toBe(1);
             });
         });
 
@@ -137,11 +144,28 @@ describe('Entity', () => {
                     data: {...user1}
                 }
             });
-            const user: Promise<User> = User.$find(user1.uuid);
+            const userPromise = User.$find(user1.uuid);
             expect(axios.get).toHaveBeenCalledWith(`/api/users/${user1.uuid}`);
-            expect(user).resolves.toBeInstanceOf(User);
-            user.then((user) => {
+            expect(userPromise).resolves.toBeInstanceOf(User);
+            userPromise.then((user) => {
                 expect(user.toObject(true)).toEqual(user1);
+            })
+        });
+
+        it('can find a wrapped user', () => {
+            const user1: any = staticUsers.first()
+            mockedAxios.get.mockResolvedValueOnce({
+                data: {
+                    data: {...user1}
+                }
+            });
+            const userPromise = User.$findWrapped<User, SingleTest<User>>(user1.uuid, (callback) => {
+                callback.outputClass = SingleTest;
+            });
+            expect(axios.get).toHaveBeenCalledWith(`/api/users/${user1.uuid}`);
+            expect(userPromise).resolves.toBeInstanceOf(SingleTest);
+            userPromise.then((user) => {
+                expect(user.entity.toObject(true)).toEqual(user1);
             })
         });
 
@@ -206,13 +230,31 @@ describe('Entity', () => {
             user.$delete();
             expect(axios.get).toHaveBeenCalledWith(`/api/users/${staticUsers.first().uuid}`);
         });
-    });
 
-    it('can sort entities', () => {
-        expect(() => {
-            User.$get((callback) => {
-                expect(callback.sort('unit').handle()).toEqual('sort=unit');
+        it('can sort entities', () => {
+            expect(() => {
+                User.$get((callback) => {
+                    expect(callback.sort('unit').handle()).toEqual('sort=unit');
+                });
+            }).toThrow(TypeError);
+        });
+
+        it('outputs the entities as EntityCollection', () => {
+            mockedAxios.get.mockResolvedValueOnce({
+                data: {
+                    data: [
+                        {...staticUsers.get(0)},
+                        {...staticUsers.get(1)}
+                    ],
+                    meta: {
+                        from: 1,
+                    }
+                },
             });
-        }).toThrow(TypeError);
+
+            const users = User.$get<EntityCollectionResponse<User>>();
+            expect(axios.get).toHaveBeenCalledWith(`/api/users`);
+            expect(users).resolves.toBeInstanceOf(EntityCollectionResponse);
+        });
     });
 })

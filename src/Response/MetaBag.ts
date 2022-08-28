@@ -4,6 +4,7 @@ import {Converter} from "../Support/Converter";
 
 export class MetaBag {
     [key: string]: any
+
     public currentPage = undefined;
     public from = undefined;
     public lastPage = undefined;

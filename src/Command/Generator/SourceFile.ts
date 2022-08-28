@@ -44,10 +44,10 @@ export class SourceFile {
         return this;
     }
 
-    public addLinesAtEndOfClass(text:string): void {
+    public addLinesAtEndOfClass(text: string): void {
         const line: Line = this.findLastClosingBracket()
 
-        if(typeof line === 'undefined'){
+        if (typeof line === 'undefined') {
             console.log(this.lines);
         }
 

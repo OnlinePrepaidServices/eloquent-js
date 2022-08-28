@@ -5,7 +5,7 @@ import {Bag, getBag} from "../../Bag/Bag";
 const name: string = 'filters';
 
 RouteBuilderBag.set(name, (filters: { key: string, value: string }[]): { key: string, value: string }[] => {
-    const filterResult:  { key: string, value: string }[] = [];
+    const filterResult: { key: string, value: string }[] = [];
     filters.forEach((filter) => {
         filterResult.push({
             key: `filter[${filter.key}]`,
@@ -19,7 +19,7 @@ RouteBuilderBag.set(name, (filters: { key: string, value: string }[]): { key: st
 
 export function FiltersResources<TBase extends Constructor>(Base: TBase) {
     return class extends Base {
-          filter(key: string, value: string): this {
+        filter(key: string, value: string): this {
             // @todo fix this hack
             getBag(this, 'data')
                 .create(name, [])
