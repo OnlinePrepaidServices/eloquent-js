@@ -54,23 +54,23 @@ export class Entity implements EntityInterface {
         const url: string = this.buildRoute(getRouteBuilder, routeBuilderCallback, 'get');
 
         return axios.get(url).then((response) => {
-            if (typeof getRouteBuilder.outputClass === 'undefined') {
+            if (typeof getRouteBuilder.responseClass === 'undefined') {
                 return EntityCollectionResponse.fromResponse(response, this) as T;
             }
 
-            return getRouteBuilder.outputClass.fromResponse(response, this) as T;
+            return getRouteBuilder.responseClass.fromResponse(response, this) as T;
         });
     }
 
     protected static find(
         uuid: string,
-        routeBuilderCallback: ((routeBuilder: FindRouteBuilder | FindWrappedRouteBuilder) => void) | null = null
+        routeBuilderCallback: ((routeBuilder: FindRouteBuilder | FindWrappedRouteBuilder) => void) | null = null,
+        routeBuilder: FindRouteBuilder | FindWrappedRouteBuilder
     ): Promise<any> {
         this.initiateRoutes();
 
-        const findRouteBuilder = new FindRouteBuilder();
-        findRouteBuilder.routeParameter('key', uuid);
-        const url: string = this.buildRoute(findRouteBuilder, routeBuilderCallback, 'find');
+        routeBuilder.routeParameter('key', uuid);
+        const url: string = this.buildRoute(routeBuilder, routeBuilderCallback, 'find');
 
         return axios.get(url)
     }
@@ -80,7 +80,7 @@ export class Entity implements EntityInterface {
         uuid: string,
         routeBuilderCallback: ((routeBuilder: FindRouteBuilder) => void) | null = null
     ): Promise<InstanceType<T>> {
-        return this.find(uuid, routeBuilderCallback).then((response) => {
+        return this.find(uuid, routeBuilderCallback, new FindRouteBuilder()).then((response) => {
             const entity = SingleEntityResponse.fromResponse<SingleEntityResponse<InstanceType<T>>>(response, this);
 
             EE.emit(new EntityEvent(EventKey.from(EventKey.RETRIEVED).prefixKey(this.constructor.name), entity.entity));
@@ -93,13 +93,12 @@ export class Entity implements EntityInterface {
         uuid: string,
         routeBuilderCallback: ((routeBuilder: FindWrappedRouteBuilder) => void)
     ): Promise<B> {
+        const findWrappedRouteBuilder = new FindWrappedRouteBuilder();
         // @ts-ignore
-        return this.find(uuid, routeBuilderCallback).then((response) => {
-            const findWrappedRouteBuilder = new FindWrappedRouteBuilder();
-
+        return this.find(uuid, routeBuilderCallback, findWrappedRouteBuilder).then((response) => {
             routeBuilderCallback(findWrappedRouteBuilder);
 
-            return findWrappedRouteBuilder.outputClass?.fromResponse(response, this) as Promise<SingleEntityResponse<T>>;
+            return findWrappedRouteBuilder.responseClass?.fromResponse(response, this) as Promise<SingleEntityResponse<T>>;
         });
     }
 

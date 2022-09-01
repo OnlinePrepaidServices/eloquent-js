@@ -124,7 +124,7 @@ describe('Entity', () => {
             });
 
             const users = User.$get<EntityCollectionResponse<User>>((routeBuilder) => {
-                routeBuilder.outputClass = PaginationCollectionResponse;
+                routeBuilder.response(PaginationCollectionResponse);
             });
             expect(axios.get).toHaveBeenCalledWith(`/api/users`);
             expect(users).resolves.toBeInstanceOf(PaginationCollectionResponse);
@@ -160,7 +160,7 @@ describe('Entity', () => {
                 }
             });
             const userPromise = User.$findWrapped<User, SingleTest<User>>(user1.uuid, (callback) => {
-                callback.outputClass = SingleTest;
+                callback.response(SingleTest);
             });
             expect(axios.get).toHaveBeenCalledWith(`/api/users/${user1.uuid}`);
             expect(userPromise).resolves.toBeInstanceOf(SingleTest);

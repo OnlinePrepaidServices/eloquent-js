@@ -3,6 +3,12 @@ import {SingleEntityResponse} from "../../Response/SingleEntityResponse";
 
 export function OutputsOneResource<TBase extends Constructor>(Base: TBase) {
     return class extends Base {
-        outputClass: typeof SingleEntityResponse<any> | undefined
+        responseClass: typeof SingleEntityResponse<any> | undefined
+
+        public response(responseClass: typeof SingleEntityResponse<any> | undefined) {
+            this.responseClass = responseClass;
+
+            return this;
+        }
     };
 }
