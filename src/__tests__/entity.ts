@@ -10,7 +10,6 @@ import {PaginationCollectionResponse} from "../Response/PaginationCollectionResp
 import {User} from "../__tests_data__/Support/UserEntity";
 import {config} from "../config";
 import {SingleTest} from "../Response/SingleTest";
-import {SingleEntityResponse} from "../Response/SingleEntityResponse";
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -255,6 +254,15 @@ describe('Entity', () => {
             const users = User.$get<EntityCollectionResponse<User>>();
             expect(axios.get).toHaveBeenCalledWith(`/api/users`);
             expect(users).resolves.toBeInstanceOf(EntityCollectionResponse);
+        });
+
+        it('can convert to an an object', () => {
+            const user = {...staticUsers.get(0)};
+            user.created_by = [{...staticUsers.get(1)}];
+
+            const userObject = new User(user);
+
+            console.log(userObject.toObject(true, true));
         });
     });
 })

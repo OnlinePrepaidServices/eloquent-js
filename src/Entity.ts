@@ -111,7 +111,7 @@ export class Entity implements EntityInterface {
         return axios
             .post(
                 url,
-                Converter.objectKeysToSnakeCase(this.attributesBag.all())
+                this.toObject(true)
             )
             .then((response) => {
                 const entity = (this.constructor as typeof Entity).create(response.data.data, true);
@@ -132,7 +132,7 @@ export class Entity implements EntityInterface {
         return axios
             .put(
                 url,
-                Converter.objectKeysToSnakeCase(this.attributesBag.all())
+                this.toObject(true)
             )
             .then((response) => {
                 const entity = (this.constructor as typeof Entity).create(response.data.data, true);
@@ -159,7 +159,7 @@ export class Entity implements EntityInterface {
         return axios
             .put(
                 url,
-                Converter.objectKeysToSnakeCase(this.originalBag.diff(this.attributesBag))
+                this.toObject(true, true),
             )
             .then((response) => {
                 const entity = (this.constructor as typeof Entity).create(response.data.data, true);
@@ -313,7 +313,34 @@ export class Entity implements EntityInterface {
         return attributesData;
     }
 
-    public toObject(skipUndefined: boolean = false): GeneralObject {
-        return Converter.objectKeysToSnakeCase(this.attributesBag.all());
+    public toObject(skipUndefined: boolean = false, diff = false): GeneralObject {
+        let object: GeneralObject;
+        if (diff) {
+            object = this.originalBag.diff(this.attributesBag)
+        } else {
+            object = this.attributesBag.all()
+        }
+
+        this.relationsBag.each((key, entity) => {
+            if (typeof entity === 'undefined') {
+                return
+            }
+
+            if (Array.isArray(entity)) {
+                const entities: string[] = [];
+
+                entity.forEach((entityObject) => {
+                    entities.push(entityObject[this.primaryKey]);
+                })
+
+                object[key] = entities;
+
+                return
+            }
+
+            object[Converter.toSnakeCase(key)] = entity[this.primaryKey];
+        });
+
+        return Converter.objectKeysToSnakeCase(object);
     }
 }
