@@ -17,9 +17,9 @@ export class DateTimeCast extends Cast {
         }
 
         if (typeof value === 'string' && (date = moment(value)) && date.isValid()) {
-            return date.format();
+            return date.toISOString();
         }
 
-        return value.format();
+        return value.toISOString();
     }
 }
