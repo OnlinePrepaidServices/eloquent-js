@@ -1,4 +1,5 @@
 import axios from "axios";
+// @ts-ignore
 import moment from "moment";
 import {Collection} from "collect.js";
 import {Configuration} from "../Configuration";
@@ -262,7 +263,42 @@ describe('Entity', () => {
 
             const userObject = new User(user);
 
-            console.log(userObject.toObject(true, true));
+            // @todo assert outcome
+            // console.log(userObject.toObject(true, true));
+        });
+
+        it('can conditionally add something to the RouteBuilder', () => {
+            const getRouteBuilder = new GetRouteBuilder();
+
+            getRouteBuilder.when(false, (builder) => {
+                builder.include('unit');
+            })
+
+            expect(getRouteBuilder.handle()).toEqual('');
+
+            getRouteBuilder.when(true, (builder) => {
+                builder.include('unit_lost');
+            })
+
+            expect(getRouteBuilder.handle()).toEqual('include=unit_lost');
+        })
+
+        it('can include multiple includes at once', () => {
+            const getRouteBuilder = new GetRouteBuilder();
+
+            expect(getRouteBuilder.includes(['unit', 'lost']).handle()).toEqual('include=unit%2Clost');
+        })
+
+        it('can filter multiple filters at once', () => {
+            const getRouteBuilder = new GetRouteBuilder();
+
+            expect(getRouteBuilder
+                .filters([
+                    {key: 'unit', value: 'lost'},
+                    {key: 'lost', value: 'unit'},
+                ])
+                .handle())
+                .toEqual('filter%5Bunit%5D=lost&filter%5Blost%5D=unit');
         });
     });
 })

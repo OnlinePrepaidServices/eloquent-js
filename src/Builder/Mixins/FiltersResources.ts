@@ -2,6 +2,8 @@ import {Constructor} from "../../Mixins/Constructor";
 import {RouteBuilderBag} from "../RouteBuilderBag";
 import {Bag, getBag} from "../../Bag/Bag";
 
+type filterArguments = { key: string, value: any }
+
 const name: string = 'filters';
 
 RouteBuilderBag.set(name, (filters: { key: string, value: string }[]): { key: string, value: string }[] => {
@@ -28,6 +30,14 @@ export function FiltersResources<TBase extends Constructor>(Base: TBase) {
                     key: key,
                     value: value,
                 });
+
+            return this;
+        }
+
+        filters(filters: filterArguments[]) {
+            filters.forEach((filter) => {
+                this.filter(filter.key, filter.value);
+            })
 
             return this;
         }

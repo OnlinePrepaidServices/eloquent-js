@@ -20,5 +20,13 @@ export function IncludesResources<TBase extends Constructor>(Base: TBase) {
 
             return this;
         }
+
+        includes(includes: string[]) {
+            includes.forEach((include) => {
+                this.include(include);
+            })
+
+            return this;
+        }
     };
 }

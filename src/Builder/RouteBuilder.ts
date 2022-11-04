@@ -21,4 +21,12 @@ export class RouteBuilder {
 
         return new URLSearchParams(searchResults).toString();
     }
+
+    public when(condition: boolean, callback: (builder: this) => void) {
+        if (condition) {
+            callback(this);
+        }
+
+        return this;
+    }
 }
