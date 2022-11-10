@@ -26,7 +26,7 @@ export class Entity implements EntityInterface {
     protected static routesBag: Bag;
     protected static routesInitiated: boolean = false;
     protected castsBag: CastsBag = new CastsBag();
-    protected isDirty: boolean = false;
+    protected isEntityDirty: boolean = false;
     protected isInitialized: boolean = false;
     protected fetchedFromServer: boolean;
     protected primaryKey = 'uuid';
@@ -144,7 +144,7 @@ export class Entity implements EntityInterface {
     }
 
     public $patch(routeBuilderCallback: ((routeBuilder: RouteParameterRouteBuilder) => void) | null = null, key: string = this.primaryKey): Promise<Entity | this> {
-        if (!this.isDirty) {
+        if (!this.isEntityDirty) {
             return new Promise((resolve) => {
                 resolve(this);
             });
@@ -265,8 +265,8 @@ export class Entity implements EntityInterface {
 
     public set(key: string, value: any): void {
         if (this.attributesBag.has(key)) {
-            if (!this.isDirty && this.isInitialized && !this.attributesBag.isEqualTo(key, value)) {
-                this.isDirty = true;
+            if (!this.isEntityDirty && this.isInitialized && !this.attributesBag.isEqualTo(key, value)) {
+                this.isEntityDirty = true;
             }
 
             if (this.castsBag.has(key)) {
@@ -311,6 +311,10 @@ export class Entity implements EntityInterface {
         })
 
         return attributesData;
+    }
+
+    public isDirty() {
+        return this.isEntityDirty;
     }
 
     public toObject(skipUndefined: boolean = false, diff = false): GeneralObject {

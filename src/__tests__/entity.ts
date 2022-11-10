@@ -81,15 +81,15 @@ describe('Entity', () => {
         it('becomes dirty when modified', () => {
             const user = new User({...staticUsers.first()});
             // @ts-ignore
-            expect(user.isDirty).toBeFalsy();
+            expect(user.isDirty()).toBeFalsy();
 
             user.firstName = staticUsers.first().first_name;
             // @ts-ignore
-            expect(user.isDirty).toBeFalsy();
+            expect(user.isDirty()).toBeFalsy();
 
             user.firstName = 'Ben';
             // @ts-ignore
-            expect(user.isDirty).toBeTruthy();
+            expect(user.isDirty()).toBeTruthy();
         });
 
         it('can handle multiple route parameters', () => {
