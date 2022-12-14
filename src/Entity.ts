@@ -115,6 +115,8 @@ export class Entity implements EntityInterface {
             )
             .then((response) => {
                 const entity = (this.constructor as typeof Entity).create(response.data.data, true);
+                this.isEntityDirty = false;
+                this.originalBag = this.attributesBag.clone()
 
                 EE.emit(new EntityEvent(EventKey.from(EventKey.CREATED).prefixKey(this.constructor.name), entity));
 
@@ -136,6 +138,8 @@ export class Entity implements EntityInterface {
             )
             .then((response) => {
                 const entity = (this.constructor as typeof Entity).create(response.data.data, true);
+                this.isEntityDirty = false;
+                this.originalBag = this.attributesBag.clone()
 
                 EE.emit(new EntityEvent(EventKey.from(EventKey.UPDATED).prefixKey(this.constructor.name), entity));
 
@@ -153,6 +157,8 @@ export class Entity implements EntityInterface {
         const patchRouteBuilder = new RouteParameterRouteBuilder();
         patchRouteBuilder.routeParameter('key', this.attributesBag.get(key));
         const url: string = (this.constructor as typeof Entity).buildRoute(patchRouteBuilder, routeBuilderCallback, 'update');
+        this.isEntityDirty = false;
+        this.originalBag = this.attributesBag.clone()
 
         EE.emit(new EntityEvent(EventKey.from(EventKey.UPDATING).prefixKey(this.constructor.name), this));
 
