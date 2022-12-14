@@ -43,6 +43,9 @@ export class Entity implements EntityInterface {
         this.originalBag = this.attributesBag.clone();
         this.isInitialized = true;
         this.fetchedFromServer = fetchedFromServer;
+        if (!fetchedFromServer) {
+            this.isEntityDirty = true;
+        }
     }
 
     public static $get<T extends EntityCollectionResponse<any>>(
@@ -115,8 +118,6 @@ export class Entity implements EntityInterface {
             )
             .then((response) => {
                 const entity = (this.constructor as typeof Entity).create(response.data.data, true);
-                this.isEntityDirty = false;
-                this.originalBag = this.attributesBag.clone()
 
                 EE.emit(new EntityEvent(EventKey.from(EventKey.CREATED).prefixKey(this.constructor.name), entity));
 
