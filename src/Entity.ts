@@ -117,11 +117,13 @@ export class Entity implements EntityInterface {
                 this.toObject(true)
             )
             .then((response) => {
-                const entity = (this.constructor as typeof Entity).create(response.data.data, true);
+                this.isEntityDirty = false;
+                this.originalBag = this.attributesBag.clone();
+                this.fetchedFromServer = true;
 
-                EE.emit(new EntityEvent(EventKey.from(EventKey.CREATED).prefixKey(this.constructor.name), entity));
+                EE.emit(new EntityEvent(EventKey.from(EventKey.CREATED).prefixKey(this.constructor.name), this));
 
-                return entity;
+                return this;
             });
     }
 
@@ -138,13 +140,13 @@ export class Entity implements EntityInterface {
                 this.toObject(true)
             )
             .then((response) => {
-                const entity = (this.constructor as typeof Entity).create(response.data.data, true);
                 this.isEntityDirty = false;
-                this.originalBag = this.attributesBag.clone()
+                this.originalBag = this.attributesBag.clone();
+                this.fetchedFromServer = true;
 
-                EE.emit(new EntityEvent(EventKey.from(EventKey.UPDATED).prefixKey(this.constructor.name), entity));
+                EE.emit(new EntityEvent(EventKey.from(EventKey.UPDATED).prefixKey(this.constructor.name), this));
 
-                return entity;
+                return this;
             })
     }
 
@@ -158,8 +160,6 @@ export class Entity implements EntityInterface {
         const patchRouteBuilder = new RouteParameterRouteBuilder();
         patchRouteBuilder.routeParameter('key', this.attributesBag.get(key));
         const url: string = (this.constructor as typeof Entity).buildRoute(patchRouteBuilder, routeBuilderCallback, 'update');
-        this.isEntityDirty = false;
-        this.originalBag = this.attributesBag.clone()
 
         EE.emit(new EntityEvent(EventKey.from(EventKey.UPDATING).prefixKey(this.constructor.name), this));
 
@@ -169,11 +169,13 @@ export class Entity implements EntityInterface {
                 this.toObject(true, true),
             )
             .then((response) => {
-                const entity = (this.constructor as typeof Entity).create(response.data.data, true);
+                this.isEntityDirty = false;
+                this.originalBag = this.attributesBag.clone();
+                this.fetchedFromServer = true;
 
-                EE.emit(new EntityEvent(EventKey.from(EventKey.UPDATED).prefixKey(this.constructor.name), entity));
+                EE.emit(new EntityEvent(EventKey.from(EventKey.UPDATED).prefixKey(this.constructor.name), this));
 
-                return entity;
+                return this;
             })
     }
 
@@ -187,11 +189,14 @@ export class Entity implements EntityInterface {
         return axios
             .delete(url)
             .then((response) => {
-                const entity = (this.constructor as typeof Entity).create(response.data.data, true);
+                this.isEntityDirty = true;
+                this.attributesBag.set(this.primaryKey, undefined);
+                this.originalBag = this.attributesBag.clone();
+                this.fetchedFromServer = true;
 
-                EE.emit(new EntityEvent(EventKey.from(EventKey.DELETED).prefixKey(this.constructor.name), entity));
+                EE.emit(new EntityEvent(EventKey.from(EventKey.DELETED).prefixKey(this.constructor.name), this));
 
-                return entity;
+                return this;
             })
     }
 

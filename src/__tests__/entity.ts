@@ -39,7 +39,7 @@ describe('Entity', () => {
     describe('An entity can interact with the server.', () => {
         // @todo check why the order of test matter in this one.
         it('does not perform an axios call when partially updating the entity asserting the entity is clean', () => {
-            const user = new User({...staticUsers.first()});
+            const user = new User({...staticUsers.first()}, true);
             user.$patch().then((newUser) => {
                 expect(user).toEqual(newUser);
             });
@@ -79,7 +79,7 @@ describe('Entity', () => {
         });
 
         it('becomes dirty when modified', () => {
-            const user = new User({...staticUsers.first()});
+            const user = new User({...staticUsers.first()}, true);
             // @ts-ignore
             expect(user.isDirty()).toBeFalsy();
 
@@ -169,26 +169,36 @@ describe('Entity', () => {
             })
         });
 
-        it('can create an entity on the server', () => {
+        it('can create an entity on the server', async () => {
             const user = new User({...staticUsers.first()});
             mockedAxios.post.mockResolvedValueOnce({
                 data: {
                     data: {...staticUsers.first()}
                 }
             });
-            user.$create();
+            const mockFn = jest.fn()
+            await user
+                .$create()
+                .then((entity) => {
+                    expect(entity).toBe(user);
+                    expect(entity).toEqual(user);
+                    mockFn();
+                })
+            expect(mockFn).toBeCalled();
             expect(axios.post).toHaveBeenCalledWith(`/api/users`, {...staticUsers.first()});
         });
 
-        it('can update an entity on the server', () => {
+        it('can update an entity on the server', async() => {
             const user = new User({...staticUsers.first()});
             mockedAxios.put.mockResolvedValueOnce({
                 data: {
                     data: {...staticUsers.first()}
                 }
             });
-            user.$update();
+            expect(user.isDirty()).toBeTruthy();
+            await user.$update();
             expect(axios.put).toHaveBeenCalledWith(`/api/users/${user.uuid}`, {...staticUsers.first()});
+            expect(user.isDirty()).toBeFalsy();
         });
 
         it('can partially update an entity on the server', () => {
