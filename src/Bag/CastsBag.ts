@@ -29,7 +29,7 @@ export class CastsBag extends Bag {
     }
 
     public performSetCast(key: string, value: any, entity: Entity): any {
-        if (!this.has(key)) {
+        if (!this.has(key) || typeof value === 'undefined') {
             return value;
         }
 
