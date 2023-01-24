@@ -1,11 +1,16 @@
 import {Bag} from "./Bag";
 import {Converter} from "../Support/Converter";
 import {GeneralObjectType} from "../GeneralTypes";
+import {Entity} from "../Entity";
 
 type Types = { type: any[] | unknown, setType: any[] | unknown };
 
 export class AttributeBag extends Bag {
     protected types: GeneralObjectType<Types> = {};
+
+    constructor(items: object = {}, protected entity: Entity) {
+        super(items);
+    }
 
     public load(data: { [key: string]: any }): this {
         const convertedData = Converter.objectKeysToCamelCase(data);
@@ -26,7 +31,7 @@ export class AttributeBag extends Bag {
             };
         }
 
-        return super.create(key, initialValue);
+        return super.create(key, this.entity.castsBag.performSetCast(key, initialValue, this.entity));
     }
 
     public type(key: string): Types | undefined {

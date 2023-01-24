@@ -1,11 +1,7 @@
 import {GeneralObject} from "../GeneralTypes";
 
 export class Bag {
-    protected items: any | object = {};
-
-    constructor(items: object = {}) {
-        this.items = items;
-    }
+    constructor(protected items: GeneralObject = {}) {}
 
     public load(data: GeneralObject): this {
         this.items = data;

@@ -25,19 +25,19 @@ export class Entity implements EntityInterface {
     protected relationsBag: RelationBag = new RelationBag();
     protected static routesBag: Bag;
     protected static routesInitiated: boolean = false;
-    protected castsBag: CastsBag = new CastsBag();
+    public castsBag: CastsBag = new CastsBag();
     protected isEntityDirty: boolean = false;
     protected isInitialized: boolean = false;
     protected fetchedFromServer: boolean;
     protected primaryKey = 'uuid';
 
     constructor(attributes: object = {}, fetchedFromServer: boolean = false) {
-        this.attributesBag = new AttributeBag();
+        this.casts(this.castsBag);
+        this.attributesBag = new AttributeBag({}, this);
         this.attributes(this.attributesBag);
-        this.attributesBag.load(attributes);
         this.relations(this.relationsBag);
         this.buildRelations(attributes);
-        this.casts(this.castsBag);
+        this.attributesBag.load(attributes);
 
         (this.constructor as typeof Entity).initiateRoutes();
         this.originalBag = this.attributesBag.clone();
