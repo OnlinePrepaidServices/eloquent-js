@@ -46,6 +46,7 @@ export class Entity implements EntityInterface {
         if (!fetchedFromServer) {
             this.isEntityDirty = true;
         }
+        this.attributesBag.unsetEntity();
     }
 
     public static $get<T extends EntityCollectionResponse<any>>(
@@ -105,7 +106,7 @@ export class Entity implements EntityInterface {
         });
     }
 
-    public $create(routeBuilderCallback: ((routeBuilder: RouteParameterRouteBuilder) => void) | null = null): Promise<Entity | this> {
+    public $create(routeBuilderCallback: ((routeBuilder: RouteParameterRouteBuilder) => void) | null = null): Promise<this> {
         const createRouteBuilder = new RouteParameterRouteBuilder();
         const url: string = (this.constructor as typeof Entity).buildRoute(createRouteBuilder, routeBuilderCallback, 'create');
 
@@ -117,6 +118,7 @@ export class Entity implements EntityInterface {
                 this.toObject(true)
             )
             .then((response) => {
+                this.attributesBag.load(response.data.data);
                 this.isEntityDirty = false;
                 this.originalBag = this.attributesBag.clone();
                 this.fetchedFromServer = true;
@@ -127,7 +129,7 @@ export class Entity implements EntityInterface {
             });
     }
 
-    public $update(routeBuilderCallback: ((routeBuilder: RouteParameterRouteBuilder) => void) | null = null, key: string = this.primaryKey): Promise<Entity | this> {
+    public $update(routeBuilderCallback: ((routeBuilder: RouteParameterRouteBuilder) => void) | null = null, key: string = this.primaryKey): Promise<this> {
         const updateRouteBuilder = new RouteParameterRouteBuilder();
         updateRouteBuilder.routeParameter('key', this.attributesBag.get(key));
         const url: string = (this.constructor as typeof Entity).buildRoute(updateRouteBuilder, routeBuilderCallback, 'update');
@@ -140,6 +142,7 @@ export class Entity implements EntityInterface {
                 this.toObject(true)
             )
             .then((response) => {
+                this.attributesBag.load(response.data.data);
                 this.isEntityDirty = false;
                 this.originalBag = this.attributesBag.clone();
                 this.fetchedFromServer = true;

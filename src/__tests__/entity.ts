@@ -170,22 +170,27 @@ describe('Entity', () => {
         });
 
         it('can create an entity on the server', async () => {
-            const user = new User({...staticUsers.first()});
+            const userData = {...staticUsers.first()};
+            delete userData.uuid;
+
+            const user = new User(userData);
             mockedAxios.post.mockResolvedValueOnce({
                 data: {
                     data: {...staticUsers.first()}
                 }
             });
             const mockFn = jest.fn()
+            expect(user.uuid).toBeUndefined();
             await user
                 .$create()
                 .then((entity) => {
                     expect(entity).toBe(user);
                     expect(entity).toEqual(user);
+                    expect(entity.uuid).toEqual(staticUsers.first().uuid);
                     mockFn();
                 })
             expect(mockFn).toBeCalled();
-            expect(axios.post).toHaveBeenCalledWith(`/api/users`, {...staticUsers.first()});
+            expect(axios.post).toHaveBeenCalledWith(`/api/users`, userData);
         });
 
         it('can update an entity on the server', async() => {

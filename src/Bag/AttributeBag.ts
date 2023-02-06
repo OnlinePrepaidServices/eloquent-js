@@ -37,4 +37,9 @@ export class AttributeBag extends Bag {
     public type(key: string): Types | undefined {
         return this.types[key] ?? undefined;
     }
+
+    public unsetEntity(): void {
+        // @ts-ignore
+        this.entity = undefined;
+    }
 }
