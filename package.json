@@ -1,6 +1,5 @@
 {
   "name": "eloquent-js",
-  "private": true,
   "version": "1.0.0",
   "description": "",
   "main": "lib/index.js",
@@ -27,18 +26,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/synga-nl/eloquent-js.git"
+    "url": "git+https://github.com/OnlinePrepaidServices/eloquent-js.git"
   },
   "files": [
     "lib/**/*"
   ],
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/synga-nl/eloquent-js/issues"
+    "url": "https://github.com/OnlinePrepaidServices/eloquent-js/issues"
   },
-  "homepage": "https://github.com/synga-nl/eloquent-js#readme",
+  "homepage": "https://github.com/OnlinePrepaidServices/eloquent-js#readme",
   "devDependencies": {
     "@digitak/esrun": "^3.2.10",
     "@types/jest": "^28.1.6",
